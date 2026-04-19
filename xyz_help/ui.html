@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+    --accent:#8a2bff;
+    --accent2:#aa62ff;
+    --bg:#0b0b10;
+    --panel:#111118;
+    --panel2:#171720;
+    --panel3:#1c1c27;
+    --border:rgba(255,255,255,.07);
+    --borderHover:rgba(138,43,255,.34);
+    --text:#f4f4fb;
+    --muted:#9c9cb0;
+    --shadow:0 24px 60px rgba(0,0,0,.45);
+}
+*{
+    box-sizing:border-box;
+    user-select:none;
+    -webkit-user-select:none;
+    font-family:'JetBrains Mono', monospace;
+}
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:transparent;
+}
+#overlay{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease;
+}
+#overlay.show{
+    opacity:1;
+    pointer-events:auto;
+}
+#app{
+    width:1060px;
+    max-width:94vw;
+    max-height:90vh;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:6px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    transform:translateY(10px) scale(.985);
+    transition:transform .20s ease, opacity .20s ease;
+}
+#overlay.show #app{
+    transform:translateY(0) scale(1);
+}
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px;
+    border-bottom:1px solid var(--border);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.03), transparent),
+        linear-gradient(90deg, rgba(138,43,255,.05), transparent 30%);
+}
+.titleWrap{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+.title{
+    color:var(--text);
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:.2px;
+}
+.subtitle{
+    color:var(--muted);
+    font-size:10px;
+}
+.topRight{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+.miniBadge{
+    height:34px;
+    padding:0 12px;
+    display:flex;
+    align-items:center;
+    border-radius:4px;
+    background:#14141d;
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:10px;
+    font-weight:800;
+}
+.closeBtn{
+    border:none;
+    outline:none;
+    width:34px;
+    height:34px;
+    border-radius:4px;
+    background:#1a1a22;
+    color:var(--text);
+    border:1px solid var(--border);
+    cursor:pointer;
+    font-size:15px;
+    font-weight:800;
+}
+.tabsWrap{
+    padding:14px 16px 0 16px;
+}
+.tabs{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+}
+.tab{
+    height:38px;
+    border:none;
+    outline:none;
+    border-radius:4px;
+    background:#13131b;
+    border:1px solid var(--border);
+    color:var(--muted);
+    cursor:pointer;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.2px;
+}
+.tab.active{
+    background:linear-gradient(180deg, var(--accent2), var(--accent));
+    color:#fff;
+    border-color:transparent;
+    box-shadow:0 8px 22px rgba(138,43,255,.22);
+}
+.content{
+    padding:16px;
+}
+.panel{
+    display:none;
+}
+.panel.active{
+    display:block;
+}
+.panelHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+    gap:12px;
+}
+.panelTitle{
+    color:var(--text);
+    font-size:12px;
+    font-weight:800;
+}
+.panelSub{
+    color:var(--muted);
+    font-size:10px;
+    margin-top:4px;
+}
+.counter{
+    color:var(--muted);
+    font-size:10px;
+    font-weight:800;
+    padding:8px 10px;
+    border-radius:4px;
+    background:#14141d;
+    border:1px solid var(--border);
+}
+.list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    max-height:58vh;
+    overflow-y:auto;
+    padding-right:2px;
+}
+.list::-webkit-scrollbar{
+    width:6px;
+}
+.list::-webkit-scrollbar-thumb{
+    background:rgba(255,255,255,.08);
+    border-radius:4px;
+}
+.item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px;
+    background:linear-gradient(180deg, var(--panel3), var(--panel2));
+    border:1px solid var(--border);
+    border-radius:5px;
+}
+.keyBox, .cmdBox, .ruleIndex{
+    min-width:56px;
+    height:36px;
+    padding:0 12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:4px;
+    background:#101018;
+    border:1px solid rgba(138,43,255,.20);
+    color:#fff;
+    font-size:11px;
+    font-weight:800;
+    flex-shrink:0;
+}
+.cmdBox{
+    min-width:96px;
+}
+.ruleIndex{
+    min-width:44px;
+}
+.itemBody{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+.itemTitle{
+    color:var(--text);
+    font-size:11px;
+    font-weight:800;
+}
+.desc{
+    color:var(--text);
+    font-size:13px;
+    line-height:1.55;
+}
+.ruleItem{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    padding:13px;
+    background:linear-gradient(180deg, var(--panel3), var(--panel2));
+    border:1px solid var(--border);
+    border-radius:5px;
+}
+.ruleBody{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+.ruleTitle{
+    color:var(--text);
+    font-size:11px;
+    font-weight:800;
+}
+.ruleDesc{
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.65;
+}
+
+.infoLayout{
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:12px;
+}
+.serverMain{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+.heroCard{
+    background:linear-gradient(180deg, var(--panel3), var(--panel2));
+    border:1px solid rgba(138,43,255,.28);
+    border-radius:6px;
+    padding:16px;
+    box-shadow:0 0 18px rgba(138,43,255,.14);
+}
+.heroLabel{
+    color:var(--muted);
+    font-size:10px;
+    font-weight:700;
+    margin-bottom:8px;
+}
+.heroValue{
+    color:var(--text);
+    font-size:18px;
+    font-weight:800;
+    line-height:1.4;
+    word-break:break-word;
+}
+.teamCard{
+    background:linear-gradient(180deg, var(--panel3), var(--panel2));
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:14px;
+}
+.teamHead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+}
+.teamTitle{
+    color:var(--text);
+    font-size:12px;
+    font-weight:800;
+}
+.teamBadge{
+    color:var(--muted);
+    font-size:10px;
+    font-weight:800;
+    padding:7px 10px;
+    border-radius:4px;
+    background:#14141d;
+    border:1px solid var(--border);
+}
+.teamGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+.memberCard{
+    background:#13131b;
+    border:1px solid var(--border);
+    border-radius:5px;
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.memberCard.ownerGlow{
+    border-color:rgba(255,214,74,.28);
+    box-shadow:0 0 18px rgba(255,214,74,.13);
+}
+.memberCard.coOwnerGlow{
+    border-color:rgba(255,145,77,.28);
+    box-shadow:0 0 18px rgba(255,145,77,.12);
+}
+.memberRole{
+    color:var(--muted);
+    font-size:10px;
+    font-weight:700;
+}
+.memberName{
+    color:var(--text);
+    font-size:14px;
+    font-weight:800;
+    line-height:1.45;
+}
+.sideInfo{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+.sideCard{
+    background:linear-gradient(180deg, var(--panel3), var(--panel2));
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:14px;
+}
+.sideTitle{
+    color:var(--text);
+    font-size:11px;
+    font-weight:800;
+    margin-bottom:10px;
+}
+.sideSub{
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.55;
+}
+.infoList{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.infoRow{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px;
+    background:linear-gradient(180deg, var(--panel3), var(--panel2));
+    border:1px solid var(--border);
+    border-radius:5px;
+}
+.infoRowKey{
+    color:var(--muted);
+    font-size:10px;
+    font-weight:700;
+}
+.infoRowVal{
+    color:var(--text);
+    font-size:10px;
+    font-weight:800;
+    text-align:right;
+    word-break:break-word;
+}
+.infoRowVal a{
+    color:#dcc7ff;
+    text-decoration:none;
+    border-bottom:1px solid rgba(138,43,255,.24);
+    pointer-events:auto;
+}
+.infoRowVal a:hover{
+    color:#fff;
+    border-bottom-color:rgba(138,43,255,.5);
+}
+
+.footer{
+    padding:13px 16px 15px 16px;
+    border-top:1px solid var(--border);
+    color:var(--muted);
+    font-size:10px;
+    background:rgba(255,255,255,.01);
+}
+
+.closeBtn,
+.miniBadge,
+.tab,
+.item,
+.ruleItem,
+.heroCard,
+.teamCard,
+.memberCard,
+.sideCard,
+.infoRow{
+    transition:border-color .14s ease, box-shadow .14s ease, transform .14s ease, background .14s ease;
+}
+.closeBtn:hover,
+.miniBadge:hover,
+.tab:hover:not(.active),
+.item:hover,
+.ruleItem:hover,
+.heroCard:hover,
+.teamCard:hover,
+.memberCard:hover,
+.sideCard:hover,
+.infoRow:hover{
+    border-color:var(--borderHover);
+    box-shadow:0 0 14px rgba(138,43,255,.10);
+}
+.closeBtn:hover,
+.tab:hover:not(.active),
+.heroCard:hover,
+.teamCard:hover,
+.memberCard:hover,
+.sideCard:hover,
+.infoRow:hover{
+    transform:translateY(-1px);
+}
+
+@media (max-width: 920px){
+    .infoLayout{
+        grid-template-columns:1fr;
+    }
+}
+@media (max-width: 760px){
+    .tabs{
+        grid-template-columns:1fr 1fr;
+    }
+    .teamGrid{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+<body>
+<div id="overlay">
+    <div id="app">
+        <div class="topbar">
+            <div class="titleWrap">
+                <div class="title" id="title">Server Help</div>
+                <div class="subtitle" id="subtitle">Keyboard, commands, rules and information</div>
+            </div>
+            <div class="topRight">
+                <div class="miniBadge">HELP PANEL</div>
+                <button class="closeBtn" id="closeBtn">✕</button>
+            </div>
+        </div>
+
+        <div class="tabsWrap">
+            <div class="tabs">
+                <button class="tab active" data-tab="keyboard">KEYBOARD</button>
+                <button class="tab" data-tab="commands">COMMANDS</button>
+                <button class="tab" data-tab="rules">RULES</button>
+                <button class="tab" data-tab="information">INFORMATION</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="panel active" id="panel-keyboard">
+                <div class="panelHeader">
+                    <div>
+                        <div class="panelTitle">Keyboard Binds</div>
+                        <div class="panelSub">Main keys players use during gameplay.</div>
+                    </div>
+                    <div class="counter" id="keyboardCount">0 ITEMS</div>
+                </div>
+                <div class="list" id="keyboardList"></div>
+            </div>
+
+            <div class="panel" id="panel-commands">
+                <div class="panelHeader">
+                    <div>
+                        <div class="panelTitle">Useful Commands</div>
+                        <div class="panelSub">Quick slash commands for common actions.</div>
+                    </div>
+                    <div class="counter" id="commandsCount">0 ITEMS</div>
+                </div>
+                <div class="list" id="commandsList"></div>
+            </div>
+
+            <div class="panel" id="panel-rules">
+                <div class="panelHeader">
+                    <div>
+                        <div class="panelTitle">Server Rules</div>
+                        <div class="panelSub">Basic standards everyone should follow.</div>
+                    </div>
+                    <div class="counter" id="rulesCount">0 ITEMS</div>
+                </div>
+                <div class="list" id="rulesList"></div>
+            </div>
+
+            <div class="panel" id="panel-information">
+                <div class="panelHeader">
+                    <div>
+                        <div class="panelTitle">Server Information</div>
+                        <div class="panelSub">Main server identity, leadership and public links.</div>
+                    </div>
+                    <div class="counter">INFO</div>
+                </div>
+
+                <div class="infoLayout">
+                    <div class="serverMain">
+                        <div class="heroCard">
+                            <div class="heroLabel">SERVER NAME</div>
+                            <div class="heroValue" id="serverName">-</div>
+                        </div>
+
+                        <div class="teamCard">
+                            <div class="teamHead">
+                                <div class="teamTitle">A-TEAM</div>
+                                <div class="teamBadge">LEADERSHIP</div>
+                            </div>
+
+                            <div class="teamGrid">
+                                <div class="memberCard ownerGlow">
+                                    <div class="memberRole">OWNER</div>
+                                    <div class="memberName" id="serverOwner">-</div>
+                                </div>
+
+                                <div class="memberCard coOwnerGlow">
+                                    <div class="memberRole">CO-OWNER</div>
+                                    <div class="memberName" id="serverCoOwner">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sideInfo">
+                        <div class="sideCard">
+                            <div class="sideTitle">About This Tab</div>
+                            <div class="sideSub">
+                                Here you can find the main public information about the server,
+                                who leads it and where players can find useful links.
+                            </div>
+                        </div>
+
+                        <div class="sideCard">
+                            <div class="sideTitle">Additional Information</div>
+                            <div class="infoList" id="extraInfoList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Press ESC or click the X button to close the help menu.
+        </div>
+    </div>
+</div>
+
+<script>
+const overlay = document.getElementById('overlay');
+const titleEl = document.getElementById('title');
+const subtitleEl = document.getElementById('subtitle');
+const keyboardList = document.getElementById('keyboardList');
+const commandsList = document.getElementById('commandsList');
+const rulesList = document.getElementById('rulesList');
+const closeBtn = document.getElementById('closeBtn');
+
+const keyboardCount = document.getElementById('keyboardCount');
+const commandsCount = document.getElementById('commandsCount');
+const rulesCount = document.getElementById('rulesCount');
+
+const serverName = document.getElementById('serverName');
+const serverOwner = document.getElementById('serverOwner');
+const serverCoOwner = document.getElementById('serverCoOwner');
+const extraInfoList = document.getElementById('extraInfoList');
+
+const tabs = [...document.querySelectorAll('.tab')];
+const panels = {
+    keyboard: document.getElementById('panel-keyboard'),
+    commands: document.getElementById('panel-commands'),
+    rules: document.getElementById('panel-rules'),
+    information: document.getElementById('panel-information')
+};
+
+function send(action, data = {}) {
+    return fetch(`https://${GetParentResourceName()}/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+        body: JSON.stringify(data)
+    }).then(res => res.json().catch(() => ({}))).catch(() => ({}));
+}
+
+function setTab(name){
+    tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === name));
+    Object.entries(panels).forEach(([key, panel]) => {
+        panel.classList.toggle('active', key === name);
+    });
+}
+
+function normalizeUrl(value){
+    const text = String(value || '').trim();
+    if (!text) return '';
+    if (text.startsWith('http://') || text.startsWith('https://')) return text;
+    return `https://${text}`;
+}
+
+function renderKeyboard(items) {
+    keyboardList.innerHTML = '';
+    keyboardCount.textContent = `${items.length} ITEMS`;
+
+    for (const item of items) {
+        const row = document.createElement('div');
+        row.className = 'item';
+
+        const keyBox = document.createElement('div');
+        keyBox.className = 'keyBox';
+        keyBox.textContent = item.key || '?';
+
+        const body = document.createElement('div');
+        body.className = 'itemBody';
+
+        const desc = document.createElement('div');
+        desc.className = 'desc';
+        desc.textContent = item.description || '';
+
+        body.appendChild(desc);
+
+        row.appendChild(keyBox);
+        row.appendChild(body);
+        keyboardList.appendChild(row);
+    }
+}
+
+function renderCommands(items) {
+    commandsList.innerHTML = '';
+    commandsCount.textContent = `${items.length} ITEMS`;
+
+    for (const item of items) {
+        const row = document.createElement('div');
+        row.className = 'item';
+
+        const cmdBox = document.createElement('div');
+        cmdBox.className = 'cmdBox';
+        cmdBox.textContent = item.command || '/?';
+
+        const body = document.createElement('div');
+        body.className = 'itemBody';
+
+        const desc = document.createElement('div');
+        desc.className = 'desc';
+        desc.textContent = item.description || '';
+
+        body.appendChild(desc);
+
+        row.appendChild(cmdBox);
+        row.appendChild(body);
+        commandsList.appendChild(row);
+    }
+}
+
+function renderRules(items){
+    rulesList.innerHTML = '';
+    rulesCount.textContent = `${items.length} ITEMS`;
+
+    items.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'ruleItem';
+
+        const ruleIndex = document.createElement('div');
+        ruleIndex.className = 'ruleIndex';
+        ruleIndex.textContent = `${index + 1}.`;
+
+        const body = document.createElement('div');
+        body.className = 'ruleBody';
+
+        const title = document.createElement('div');
+        title.className = 'ruleTitle';
+        title.textContent = item.title || 'Rule';
+
+        const desc = document.createElement('div');
+        desc.className = 'ruleDesc';
+        desc.textContent = item.description || '';
+
+        body.appendChild(title);
+        body.appendChild(desc);
+        row.appendChild(ruleIndex);
+        row.appendChild(body);
+        rulesList.appendChild(row);
+    });
+}
+
+function renderInformation(info){
+    serverName.textContent = info?.serverName || '-';
+    serverOwner.textContent = info?.owner || '-';
+    serverCoOwner.textContent = info?.coOwner || '-';
+
+    extraInfoList.innerHTML = '';
+
+    const extra = Array.isArray(info?.extra) ? [...info.extra] : [];
+
+    if (info?.discord) {
+        extra.unshift({ label: 'Discord', value: info.discord });
+    }
+
+    extra.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'infoRow';
+
+        const key = document.createElement('div');
+        key.className = 'infoRowKey';
+        key.textContent = item.label || 'INFO';
+
+        const val = document.createElement('div');
+        val.className = 'infoRowVal';
+
+        const rawValue = String(item.value || '-');
+        const looksLikeLink =
+            rawValue.includes('.') ||
+            rawValue.startsWith('http://') ||
+            rawValue.startsWith('https://') ||
+            rawValue.startsWith('discord.gg/');
+
+        if (looksLikeLink && rawValue !== '-') {
+            const a = document.createElement('a');
+            a.textContent = rawValue;
+            a.href = normalizeUrl(rawValue);
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.addEventListener('click', (e) => e.stopPropagation());
+            val.appendChild(a);
+        } else {
+            val.textContent = rawValue;
+        }
+
+        row.appendChild(key);
+        row.appendChild(val);
+        extraInfoList.appendChild(row);
+    });
+}
+
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => setTab(tab.dataset.tab));
+});
+
+closeBtn.addEventListener('click', async () => {
+    await send('close');
+});
+
+document.addEventListener('keydown', async (e) => {
+    if (overlay.classList.contains('show') && e.key === 'Escape') {
+        await send('close');
+    }
+});
+
+window.addEventListener('message', (event) => {
+    const data = event.data;
+    if (!data || !data.action) return;
+
+    if (data.action === 'open') {
+        titleEl.textContent = data.title || 'Server Help';
+        subtitleEl.textContent = data.subtitle || '';
+        if (data.accent) {
+            document.documentElement.style.setProperty('--accent', data.accent);
+            document.documentElement.style.setProperty('--accent2', data.accent);
+        }
+
+        renderKeyboard(Array.isArray(data.keyboard) ? data.keyboard : []);
+        renderCommands(Array.isArray(data.commands) ? data.commands : []);
+        renderRules(Array.isArray(data.rules) ? data.rules : []);
+        renderInformation(data.information || {});
+
+        setTab('keyboard');
+        overlay.classList.add('show');
+    }
+
+    if (data.action === 'close') {
+        overlay.classList.remove('show');
+    }
+});
+</script>
+</body>
+</html>
